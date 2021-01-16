@@ -1,0 +1,84 @@
+#include <iostream>
+#include <fstream>
+#include <random>
+#include <ctime>
+#include <string>
+#include <vector>
+#include <algorithm>
+using namespace std;
+bool findSum(vector<int> v, int x) {
+    // 2.3-7* Cormen
+    static ofstream out("data.csv");
+    int n = v.size();
+    int log = log2(v.size());
+    int nAtri = n * log;
+    int nComp = n * log;
+    sort(v.begin(), v.end()); // n * logn
+    for (int i = 0; i < v.size(); i++) {
+        nComp += log;
+        if (binary_search(v.begin(), v.end(), x - v[i])) {
+            out << n << ", " << nAtri << ", " << nComp << ", " << nAtri + nComp << "\n";
+            return true;
+        } else {
+            continue;
+        }
+    }
+    out << n << ", " << nAtri << ", " << nComp << ", " << nAtri + nComp << "\n";
+    return false;
+}
+ostream& operator<< (ostream& out, vector<int> v) {
+    for (int elem: v) {
+        out << elem << " ";
+    }
+    out << "\n";
+    return out;
+}
+vector<int> countInversions(vector<int> v, int &count) {
+    //2-4 Inversions cormen d)
+    if (v.size() > 1) {
+        int n = v.size();
+        vector<int> left(v.size() / 2);
+        vector<int> right(v.size() / 2);
+        left.clear();
+        right.clear();
+        for (int i = 0; i < n / 2; i++) {
+            left.push_back(v[i]);
+        }
+        for (int i = n / 2; i < v.size(); i++) {
+            right.push_back(v[i]);
+        }
+        left = countInversions(left, count);
+        right = countInversions(right, count);
+        v.clear();
+        int i, j;
+        i = j = 0;
+        while(i < left.size() && j < right.size()) {
+            if (left[i] <= right[j]) {
+                v.push_back(left[i++]);
+            } else {
+                v.push_back(right[j++]);
+                count += left.size() - i;
+            }
+        }
+        while (i < left.size()) {
+            v.push_back(left[i++]);
+        }
+        while (j < right.size()) {
+            v.push_back(right[j++]);
+        }
+    }
+    return v;
+}
+int main()
+{
+    vector<int> v(10);
+    v.clear();
+    for (int elem: {10, 9, 8, 7, 6, 5, 4, 3, 2, 1}) {
+        v.push_back(elem);
+    }
+    int count = 0;
+    v = countInversions(v, count);
+    cout << count << "\n";
+    cout << v;
+    return 0;
+}
